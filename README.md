@@ -22,8 +22,10 @@ Search any GitHub username and instantly get detailed insights — repositories,
 - 🔍 Search any GitHub username instantly
 - 📊 View profile stats and repository details
 - 💻 Analyze top programming languages used
-- ⚡ Real-time data fetched via GitHub API
-- 🎨 Responsive and clean UI
+- ⚡ Real-time data fetched via GitHub REST API
+- 🎨 Responsive and clean UI with TailwindCSS
+- 💀 Loading skeleton while data is being fetched
+- 📭 Empty state for users with no repositories
 - ❌ Graceful error handling for invalid usernames
 
 ---
@@ -32,7 +34,7 @@ Search any GitHub username and instantly get detailed insights — repositories,
 
 | Layer | Tech |
 |-------|------|
-| Frontend | React.js, Vite, TailwindCSS ,Javascript|
+| Frontend | React.js, Vite, TailwindCSS, JavaScript |
 | API | GitHub REST API |
 | Deployment | Vercel |
 
@@ -42,72 +44,82 @@ Search any GitHub username and instantly get detailed insights — repositories,
 
 ```
 github-profile-analyzer/
-├── backend/
-│   ├── routes/
-│   │   └── github.js
-│   └── server.js
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ProfileCard.jsx
-│   │   │   └── RepoList.jsx
-│   │   └── App.jsx
-└── README.md
+├── dist/
+├── public/
+├── screenshots/
+│   ├── home.png
+│   └── profile.png
+├── src/
+│   ├── assets/
+│   ├── components/
+│   │   ├── EmptyState.jsx
+│   │   ├── ErrorState.jsx
+│   │   ├── LoadingSkeleton.jsx
+│   │   ├── Navbar.jsx
+│   │   ├── ProfileCard.jsx
+│   │   ├── RepoList.jsx
+│   │   └── SearchBar.jsx
+│   ├── pages/
+│   │   └── Home.jsx
+│   ├── Services/
+│   │   └── githubApi.js
+│   ├── App.css
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── tailwind.config.js
+└── vite.config.js
 ```
 
 ---
 
 ## ⚙️ Setup Instructions
 
-### 1. Clone Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/akshadawagadare/github-profile-analyzer.git
 cd github-profile-analyzer
 ```
 
-### 2. Backend Setup
+### 2. Install Dependencies
 
 ```bash
-cd backend
 npm install
 ```
 
-Create a `.env` file:
-
-```env
-GITHUB_TOKEN=your_github_token_here
-PORT=5000
-```
-
-Start the server:
+### 3. Start Development Server
 
 ```bash
-node server.js
-```
-
-Backend runs on: `http://localhost:5000`
-
-### 3. Frontend Setup
-
-```bash
-cd frontend
-npm install
 npm run dev
 ```
 
-Frontend runs on: `http://localhost:5173`
+App runs on: `http://localhost:5173`
+
+### 4. Build for Production
+
+```bash
+npm run build
+```
 
 ---
 
-## 🔌 API Endpoints
+## 🔌 GitHub REST API Endpoints Used
+
+All API calls are centralized in `src/Services/githubApi.js`.
 
 ### Get GitHub Profile
 ```
-GET /api/github/:username
+GET https://api.github.com/users/:username
 ```
 
-Response:
+Sample response:
 ```json
 {
   "name": "Akshada Wagadare",
@@ -119,30 +131,45 @@ Response:
 
 ### Get Repositories
 ```
-GET /api/github/:username/repos
+GET https://api.github.com/users/:username/repos
 ```
 
-Response:
+Sample response:
 ```json
 [
   {
     "name": "github-profile-analyzer",
     "language": "JavaScript",
-    "stars": 5
+    "stargazers_count": 5,
+    "forks_count": 2
   }
 ]
 ```
 
 ---
 
+## 🧩 Component Overview
+
+| Component | Description |
+|-----------|-------------|
+| `Navbar.jsx` | Top navigation bar |
+| `SearchBar.jsx` | Username input and search trigger |
+| `ProfileCard.jsx` | Displays avatar, bio, and profile stats |
+| `RepoList.jsx` | Lists repositories with language and star info |
+| `LoadingSkeleton.jsx` | Placeholder UI shown while data loads |
+| `EmptyState.jsx` | Shown when a user has no public repositories |
+| `ErrorState.jsx` | Shown on invalid username or API failure |
+
+---
+
 ## 🧠 How It Works
 
-1. User enters a GitHub username
-2. Frontend sends request to Express backend
-3. Backend fetches data from GitHub REST API
-4. Profile stats and repositories are parsed
-5. Top languages are calculated from repo data
-6. Results are displayed in a clean dashboard
+1. User enters a GitHub username in `SearchBar`
+2. `githubApi.js` calls the GitHub REST API
+3. `ProfileCard` renders avatar, bio, followers, and repo count
+4. `RepoList` displays all public repositories
+5. Top languages are calculated from repository data
+6. `LoadingSkeleton` shows during fetch, `ErrorState` on failure, `EmptyState` if no repos exist
 
 ---
 
@@ -151,16 +178,16 @@ Response:
 - 📈 Contribution graph visualization
 - 🌙 Dark mode support
 - 💾 Save and compare multiple profiles
-- 🔐 GitHub OAuth login
+- 🔐 GitHub OAuth login for higher API rate limits
 - 📤 Export profile stats as PDF
 
 ---
 
 ## ⚠️ Notes
 
-- Start backend before frontend
-- A GitHub token in `.env` increases API rate limit from 60 to 5000 requests/hour
-- Never expose your GitHub token in frontend code
+- GitHub REST API allows **60 unauthenticated requests/hour** per IP
+- To increase the limit, add a GitHub Personal Access Token to your request headers inside `githubApi.js`
+- Never expose tokens in frontend code — use a `.env` file and Vite's `import.meta.env`
 
 ---
 
